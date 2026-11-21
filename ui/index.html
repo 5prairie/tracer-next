@@ -1,0 +1,59 @@
+<!doctype html>
+<!-- index.html: the page's skeleton. Everything in it is filled by main.js from the stream:
+     the page has no layout of its own per application. The scripts are plain modules;
+     nothing is built or fetched from elsewhere. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>tracer</title>
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body>
+  <header>
+    <span class="brand">tracer</span>
+    <span id="host" class="dim"></span>
+    <label class="dim">thread <select id="thread"></select></label>
+    <span class="spacer"></span>
+    <span id="stream-state" class="dim"></span>
+    <span class="group" id="window">
+      <button data-window="fast" class="on"></button>
+      <button data-window="slow"></button>
+    </span>
+    <button id="pause">pause</button>
+  </header>
+
+  <section id="checks" class="card"></section>
+
+  <main>
+    <section class="card">
+      <h2>latency <span id="latency-note" class="dim"></span></h2>
+      <div id="plots">
+        <canvas id="latency"></canvas>
+        <div id="lanes"></div>
+        <div id="hairline" hidden></div>
+      </div>
+    </section>
+
+    <aside>
+      <section class="card">
+        <h2>sites <span class="dim">last second</span></h2>
+        <table id="sites"></table>
+      </section>
+      <section class="card">
+        <h2>slowest traces <span class="dim">one per second, in the window</span></h2>
+        <table id="slowest"></table>
+      </section>
+      <section class="card">
+        <h2>trace <span id="trace-note" class="dim"></span></h2>
+        <div id="trace-box"><canvas id="trace"></canvas></div>
+        <div id="trace-during"></div>
+      </section>
+    </aside>
+  </main>
+
+  <div id="sources"></div>
+  <section id="unavailable" class="card"></section>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

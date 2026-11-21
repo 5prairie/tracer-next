@@ -1,0 +1,212 @@
+/* ui.css: one dark, dense look. Colour means state (green, amber, red) or names a site;
+   nothing else is coloured. Numbers are monospace and right-aligned so that they compare.
+   There is no second theme. */
+
+:root {
+  --ground:  #0b0d10;
+  --card:    #12151a;
+  --line:    #1f242c;
+  --text:    #c9d1d9;
+  --dim:     #8b949e;
+  --green:   #3fb950;
+  --amber:   #d29922;
+  --red:     #f85149;
+  --accent:  #58a6ff;
+  --bar:     #4a5567;  /* a lane's bar while its value is under every threshold */
+  --bright:  #ffffff;  /* the median line, which must show under the 99th percentile */
+  --site-0:  #58a6ff;  /* one per site, by its index; draw.js repeats them past the last */
+  --site-1:  #f0883e;
+  --site-2:  #3fb950;
+  --site-3:  #bc8cff;
+  --site-4:  #e3b341;
+  --site-5:  #ff7b72;
+  --site-6:  #39c5cf;
+  --site-7:  #d2a8ff;
+  --mono:    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans:    system-ui, -apple-system, "Segoe UI", sans-serif;
+  --lane-name:  220px;  /* a lane's two side columns; latency.js pads its chart with them */
+  --lane-value: 104px;
+  --card-min:   440px;  /* the narrowest a column of source cards gets; table.js counts them */
+  --value-min:  9ch;    /* a number's cell: as wide as most values, so it keeps its width */
+}
+
+* { box-sizing: border-box; scrollbar-color: var(--line) var(--card); }
+html { scrollbar-gutter: stable; }  /* the page keeps its width when it starts to scroll */
+
+body {
+  margin: 0;
+  padding: 0 12px 12px;
+  background: var(--ground);
+  color: var(--text);
+  font: 12px/1.35 var(--sans);
+}
+
+.dim   { color: var(--dim); }
+.green { color: var(--green); }
+.amber { color: var(--amber); }
+.red   { color: var(--red); }
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 38px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 10px;
+  white-space: nowrap;
+}
+
+.brand  { font-weight: 600; letter-spacing: 0.04em; }
+#host   { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#stream-state { font-variant-numeric: tabular-nums; }
+.spacer { flex: 1; }
+
+button, select {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font: 11px var(--mono);
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+button.on { border-color: var(--accent); color: var(--accent); }
+.group button + button { margin-left: -1px; }
+
+/* Both columns are as tall as the taller one: the last card of the aside takes what is left. */
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(340px, 28vw, 560px);
+  gap: 10px;
+}
+
+aside { display: flex; flex-direction: column; gap: 10px; }
+aside > :last-child { flex: 1; }
+
+@media (max-width: 1100px) {
+  :root { --lane-name: 150px; }
+  main  { grid-template-columns: minmax(0, 1fr); }
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+
+/* A title is one line, whatever its note says: a longer note is cut, it does not wrap. */
+h2 {
+  margin: 0 0 6px;
+  font: 600 10px var(--sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+h2 .dim { font-weight: 400; letter-spacing: 0; text-transform: none; margin-left: 6px; }
+
+canvas { display: block; width: 100%; }
+#latency { height: 210px; cursor: crosshair; }
+#trace   { height: 36px; }  /* traces.js sets it: this is two rows, before the first draw */
+/* traces.js sets its height from the thread's sites; a longer trace scrolls in it. */
+#trace-box { overflow-y: auto; scrollbar-gutter: stable; }
+
+/* ---- lanes: one row per metric, all on the latency chart's time axis ---- */
+
+#lanes { max-height: 336px; overflow-y: auto; }
+
+/* The pointer's line over the chart and the lanes: latency.js moves it, nothing is drawn. */
+#plots { position: relative; }
+#hairline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: var(--text);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.lane {
+  display: grid;
+  grid-template-columns: var(--lane-name) minmax(0, 1fr) var(--lane-value);
+  align-items: center;
+  height: 28px;
+  border-top: 1px solid var(--line);
+}
+.lane .name  { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 6px; }
+.lane .value { font: 11px var(--mono); text-align: right; white-space: nowrap; }
+.lane .period { color: var(--dim); font: 10px var(--mono); margin-left: 6px; }
+.lane canvas { height: 27px; cursor: crosshair; }
+
+/* ---- tables ---- */
+
+table { width: 100%; border-collapse: collapse; font: 11px var(--mono); }
+th {
+  font: 400 10px var(--sans);
+  color: var(--dim);
+  text-align: right;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+td { text-align: right; padding: 1px 6px; white-space: nowrap; }
+/* The first column takes the slack, the others are as wide as their widest value can be:
+   numbers stay together on the right and a column never changes width with its value. */
+th:first-child, td:first-child { text-align: left; padding-left: 0; width: 100%; }
+td + td { min-width: var(--value-min); }
+tr.pick { cursor: pointer; }
+tr.quiet td:not(.amber):not(.red) { color: var(--dim); }
+tr.pick:hover td, tr.picked td { background: var(--line); }
+
+.swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 6px;
+}
+
+/* ---- checks, source cards, what is not available ---- */
+
+#unavailable { margin-top: 10px; }
+
+#checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+#checks h2 { margin: 0 8px 0 0; }
+
+.check {
+  font: 11px var(--mono);
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--green);
+  border-radius: 2px;
+}
+/* As wide as most values: the cell's width is its label's, not its value's. */
+.check .reading {
+  display: inline-block;
+  min-width: var(--value-min);
+  margin-left: 6px;
+  text-align: right;
+}
+.check.amber { border-left-color: var(--amber); }
+.check.red   { border-left-color: var(--red); color: var(--red); }
+
+/* Cards of unequal height in columns; table.js says which card goes in which column. */
+#sources { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; }
+#sources > div { flex: 1; min-width: 0; }
+#sources .card { margin-bottom: 10px; overflow-x: auto; }
+/* A title, up to traces.js DURING_MAX lines, and one of what stands all along: always that
+   high, so that the page does not move with what a second had. */
+#trace-during { margin-top: 6px; font: 11px var(--mono); height: 10lh; overflow-y: auto; }
+
+#unavailable:empty { display: none; }
+#unavailable div { font: 11px var(--mono); }
